@@ -7,6 +7,7 @@ const connectDB = require('./DB/dbConnection');
 connectDB();
 const Router = require('./VIEW/auth');
 
+app.use(express.json());
 app.use(Router);
 
 app.get('/', (req,res)=>{
