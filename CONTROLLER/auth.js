@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Auth = require("../MODEL/auth");
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const signUp = async (req, res) => {
   try {
@@ -18,9 +19,18 @@ const signUp = async (req, res) => {
         username: username,
         password: hashedPassword,
       });
+      const token = jwt.sign({
+        id: userSignup._id,
+        name: userSignup.fullname,
+        email:userSignup.email,
+        username:userSignup.username
+      },config.process.env.JWT_SECRET,{
+        expiresIn:'1d'
+      });
       return res.status(201).json({
         message: "User Signed Up",
         user: userSignup,
+        token:token
       });
     }
   } catch (error) {
