@@ -3,6 +3,8 @@ const Auth = require("../MODEL/auth");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+
+// signup
 const signUp = async (req, res) => {
   try {
     const { fullname, email, username, password } = req.body;
@@ -19,22 +21,9 @@ const signUp = async (req, res) => {
         username: username,
         password: hashedPassword,
       });
-      const token = jwt.sign(
-        {
-          id: userSignup._id,
-          name: userSignup.fullname,
-          email: userSignup.email,
-          username: userSignup.username,
-        },
-        process.env.JWT_SECRET,
-        {
-          expiresIn: "1d",
-        },
-      );
       return res.status(201).json({
         message: "User Signed Up",
         user: userSignup,
-        token: token,
       });
     }
   } catch (error) {
@@ -45,11 +34,13 @@ const signUp = async (req, res) => {
   }
 };
 
+// decoded
+
 const tokenDecoded = async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
-    return res.status(201).json({
+    return res.status(401).json({
       message: "Token does not exist.",
     });
   }
@@ -58,11 +49,13 @@ const tokenDecoded = async (req, res) => {
   console.log("TOKEN:", token);
   console.log("DECODED:", decoded);
 
-  return res.status(201).json({
+  return res.status(200).json({
     message: "Token decoded successfully",
     decoded: decoded,
   });
 };
+
+//login
 
 const logIn = async (req, res) => {
   const { username, password } = req.body;
@@ -78,12 +71,25 @@ const logIn = async (req, res) => {
     return res.status(400).json({
       message: "Username or Password incorrect",
     });
-  } else {
-    return res.status(201).json({
-      message: "User logged in successfully.",
-      user: existingUser,
-    });
   }
+
+  const token = jwt.sign(
+    {
+      id: existingUser._id,
+      name: existingUser.fullname,
+      email: existingUser.email,
+      username: existingUser.username,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "1d",
+    },
+  );
+  return res.status(200).json({
+    message: "User logged in successfully.",
+    user: existingUser,
+    token:token
+  });
 };
 
 module.exports = { signUp, logIn, tokenDecoded };
